@@ -23,9 +23,11 @@ namespace chip_8
         {
             InitializeComponent();
             CreateDrawingVisualRectangle();
+            Internals internals = new Internals();
+            internals.printtoString(1);
         }
         Rectangle[,]? pixel = new Rectangle[64, 32];
-        void setpixel(int x, int y, bool state)
+       void setpixel(int x, int y, bool state)
         {
             if (pixel[x, y].Fill == Brushes.White && state == false)
             {
