@@ -12,7 +12,7 @@ namespace chip_8
     {
         Rectangle[,] pixel;
         byte[] memory =  new byte[4096];
-        byte[] fmemory = File.ReadAllBytes("C:\\Users\\scoop\\Source\\Repos\\chip8-emulator\\ibm.ch8");
+        byte[] fmemory = File.ReadAllBytes("C:\\Users\\aldawson\\Source\\Repos\\corvuscorax12\\chip8-emulator\\ibm.ch8");
         public Rectangle[,] Rect
         {
             set { pixel = value; }
@@ -112,23 +112,33 @@ namespace chip_8
             int regX = regs[X];
             int regY = regs[Y];
             int Nibble = (opCode & 0x000F);
-            int xCoord = regX & 63;
-            int yCoord = regY & 31;
             regs[15] = 0;
             for (int n = 0; n < Nibble; n++)
             {
+            int yCoord = regY & 31;
+                    int bit = 8;
               for (int i = 0; i < 8; i++)
                 {
+                    int xCoord = regX & 63;
 
-                    var vals = GetBitX(memory[IR+n], i);
-                    if (vals == false)
+                    if (!GetBitX(memory[IR + n], bit))
                     {
                         setpixel(xCoord + i, yCoord+n, false);
                     }
-                    if (vals == true)
+                    else if (GetBitX(memory[IR + n], bit))
                     {
                         setpixel(xCoord + i, yCoord+n, true);
                     }
+                    bit--;
+                    if (xCoord == 32 -1)
+                    {
+                        break;
+                    }
+                   
+                }
+                if (yCoord == 64 -1)
+                {
+                    break;
                 }
             }
             
@@ -156,22 +166,15 @@ namespace chip_8
         public void setpixel(int x, int y, bool state)
         {
           
-            if (pixel[x, y].Fill == Brushes.White && state == false)
+            if (!state)
             {
                 pixel[x, y].Fill = Brushes.White;
             }
-            else if (pixel[x, y].Fill == Brushes.White && state == true)
+            else if (state)
             {
                 pixel[x, y].Fill = Brushes.Black;
             }
-            else if (pixel[x, y].Fill == Brushes.Black && state == false)
-            {
-                pixel[x, y].Fill = Brushes.Black;
-            }
-            else if (pixel[x, y].Fill == Brushes.Black && state == true)
-            {
-                pixel[x, y].Fill = Brushes.White;
-            }
+          
         }
     }
 }
