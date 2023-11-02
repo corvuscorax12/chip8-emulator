@@ -3,30 +3,37 @@ using System.Windows.Shapes;
 using System.Net.Sockets;
 using System.Windows.Media;
 using System.Windows.Controls;
+using System.IO;
+using System.Collections;
 
 namespace chip_8
 {
     internal class Internals
     {
         Rectangle[,] pixel;
+        byte[] memory =  new byte[4096];
+        byte[] fmemory = File.ReadAllBytes("C:\\Users\\scoop\\Source\\Repos\\chip8-emulator\\ibm.ch8");
         public Rectangle[,] Rect
         {
             set { pixel = value; }
                 }
         public Internals()
         {
-            memory[0] = 0xd1;
-            memory[1] = 0x03;
+            int i = 0;
+            foreach (var item in fmemory)
+            {
+      
+                memory[i + 512] = item;
+                i++;
+            }
         }
-        byte[] memory =  new byte[4096];
-        int IR = 0;
-        int PC = 0;
+        int IR = 512;
+        int PC = 512;
         int[] regs = new int[16];
         public void tick()
         {
             PC += 2;
         }
-        
         public void decode()
         {
             var address1 = memory[PC] << 8;
@@ -53,37 +60,75 @@ namespace chip_8
                 case 0x1000:
                     JMP(opCode);
                     break;
+                case 0x6000:
+                    _6XNN(opCode);
+                    tick();
+                    break;
+                case 0x7000:
+                    _7XNN(opCode);
+                    tick();
+                    break;
+                case 0xA000:
+                    ANNN(opCode);
+                    tick();
+                    break;
                 default:
                     break;
             }
         }
-        void JMP(int opCode)
+        void ANNN(int opCode)
         {
             int addr = (opCode & 0x0FFF);
             IR = addr;
         }
+        void JMP(int opCode)
+        {
+            int addr = (opCode & 0x0FFF);
+            PC = addr;
+        }
         void _6XNN(int opCode)
         {
-            int regX = (opCode & 0x0F00) >> 16;
+            int regX = (opCode & 0x0F00) >> 12;
             int value = (opCode & 0x00FF);
             regs[regX] = value;
         }
+        void _7XNN(int opCode)
+        {
+            int regX = (opCode & 0x0F00) >> 12;
+            int value = (opCode & 0x00FF);
+            regs[regX] += value;
+        }
+        public static Boolean GetBitX(byte bytes, int x)
+        {
+            var index = x / 8;
+            var bit = x - index * 8;
+
+            return (bytes & (1 << bit)) != 0;
+        }
         void DXYN(int opCode)
         {
-            int regX = regs[(opCode & 0x0F00) >> 16];
-            int regY = regs[(opCode & 0x00F0) >> 8];
+            int X = (opCode & 0x0F00) >> 8;
+            int Y = (opCode & 0x00F0) >> 4;
+            int regX = regs[X];
+            int regY = regs[Y];
             int Nibble = (opCode & 0x000F);
-            byte pixels = 0b00001010;
-            for (int i = 0; i < sizeof(byte); i++)
+            int xCoord = regX & 63;
+            int yCoord = regY & 31;
+            regs[15] = 0;
+            for (int n = 0; n < Nibble; n++)
             {
-                int bPixels = (pixels >> i) & 0b000000001;
-                if (bPixels == 0)
+              for (int i = 0; i < 8; i++)
                 {
-                    setpixel(regX, regY, false);
-                }
-                if (bPixels == 1)
-                {
-                    setpixel(regX, regY, true);
+
+                    var vals = GetBitX(memory[IR+n], i);
+                    if (vals == false)
+                    {
+                        setpixel(xCoord + i, yCoord+n, false);
+                    }
+                    if (vals == true)
+                    {
+                        setpixel(xCoord + i, yCoord+n, true);
+                    }
                 }
             }
             
@@ -108,9 +153,9 @@ namespace chip_8
                 }
             
         }
-        private void setpixel(int x, int y, bool state)
+        public void setpixel(int x, int y, bool state)
         {
-
+          
             if (pixel[x, y].Fill == Brushes.White && state == false)
             {
                 pixel[x, y].Fill = Brushes.White;

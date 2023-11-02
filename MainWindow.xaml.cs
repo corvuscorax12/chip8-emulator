@@ -34,13 +34,13 @@ namespace chip_8
         Internals internals = new Internals();
         void GameLoop(object Sender, EventArgs e)
         {
-            internals.decode();
+           internals.decode();
         }
-        Rectangle[,]? pixel = new Rectangle[64, 32];
+        Rectangle[,]? pixel = new Rectangle[64, 33];
     
         private void CreateDrawingVisualRectangle()
         {
-            for (int y = 0; y <= 32; y++)
+            for (int y = 0; y <= 33; y++)
             { 
                  mygrid.RowDefinitions.Add(new RowDefinition() { });
             }
@@ -49,7 +49,7 @@ namespace chip_8
                     mygrid.ColumnDefinitions.Add(new ColumnDefinition() { });
 
             }
-            for (int py = 0; py < 32;py++)
+            for (int py = 0; py < 33;py++)
             {
                 for (int px = 0; px < 64; px++)
                 {
