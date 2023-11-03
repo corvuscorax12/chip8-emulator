@@ -34,7 +34,7 @@ namespace chip_8
         Internals internals = new Internals();
         void GameLoop(object Sender, EventArgs e)
         {
-           internals.decode();
+            internals.decode();
         }
         Rectangle[,]? pixel = new Rectangle[64, 32];
     
@@ -55,7 +55,9 @@ namespace chip_8
                 {
                     pixel[px, py] = new Rectangle();
                     pixel[px, py].Fill = Brushes.White;
+
                     mygrid.Children.Add(pixel[px,py]);
+                    
                     Grid.SetRow(pixel[px,py], py);
                     Grid.SetColumn(pixel[px, py],px);
                    
