@@ -16,7 +16,7 @@ namespace chip_8
     {
         Rectangle[,] pixel;
         byte[] memory = new byte[4096];
-        byte[] fmemory = File.ReadAllBytes("C:\\Users\\scoop\\Source\\Repos\\chip8-emulators\\test2.ch8");
+        byte[] fmemory = File.ReadAllBytes("C:\\Users\\scoop\\Source\\Repos\\chip8-emulators\\corax.ch8");
         byte delayTimer;
         public Rectangle[,] Rect
         {
@@ -94,21 +94,54 @@ namespace chip_8
                 case 0xF000:
                     switch (opCode &  0x00FF)
                     {
-                        case 0x55:
-                            for (int i = 0; i <= ((opCode & 0x0F00) >> 8);i++)
+                        case 0x0055:
                             {
-                                memory[IR + i] = regs[i];
+                                int x = (opCode & 0x0F00) >> 8;
+                                for (int i = 0; i <= x; ++i)
+                                {
+                                    memory[IR + i] = regs[i];
+                                }
+                                tick();
                             }
                         break;
+                        case 0x0065:
+                            {
+                   
+                                for (uint i = 0; i <= (opCode & 0x0F00) >> 8; i++)
+                                {
+                                    regs[i]= memory[IR +i];
+                                    if (i > (opCode & 0x0F00 >> 8))
+                                    {
+                                        break;
+                                    }
+                                }
+                                tick();
+                            }
+                            break;
+                        case 0x0033:
+                            FX33(opCode);
+                            tick();
+                            break;
                         default:
+                            tick();
                             break;
                     }
-                    tick();
                 break;
                 default:
                     tick();
                     break;
             }
+        }
+        void FX33(int opCode)
+        {
+            int VX = (opCode & 0x0f00) >> 8;
+            int ones = regs[VX] % 10;
+            int tens = regs[VX] / 10 % 10;
+            int hundereds = regs[VX] / 100 % 10;
+            memory[IR] = (byte)hundereds;
+            memory[IR + 1] = (byte)tens;
+            memory[IR +2] =(byte)ones;
+
         }
         void _FX07(int opCode)
         {
